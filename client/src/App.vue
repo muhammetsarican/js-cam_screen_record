@@ -1,6 +1,11 @@
 <script lang="ts">
-import { RecordRTCPromisesHandler, invokeSaveAsDialog } from "recordrtc";
+import {
+  RecordRTCPromisesHandler,
+  invokeSaveAsDialog,
+  DiskStorage,
+} from "recordrtc";
 import recordcomp from "./components/recordcomp.vue";
+import filesaver from "file-saver";
 
 export default {
   data() {
@@ -30,7 +35,21 @@ export default {
       await recorder.stopRecording();
       let blob = await recorder.getBlob();
       console.log(blob);
-      invokeSaveAsDialog(blob);
+      // invokeSaveAsDialog(blob, "screen_record.webm");
+
+      // ! if wanted to save to local first convert to file then save it
+      // const file = new File([blob], "screen_record_local.webm");
+      // filesaver.saveAs(file, "../records/screen_record_filesaver.webm");
+
+      const file = new File([blob], "screen_record_server.webm");
+      const data = new FormData();
+      data.append("screen_record", file);
+
+      // ! for send to server
+      fetch("http://localhost:3000/exam/upload-screen-record", {
+        method: "POST",
+        body: data,
+      }).then((response) => console.log(response));
     },
   },
 };
