@@ -13,27 +13,47 @@ export default {
       duration: 3,
     };
   },
+  computed: {
+    timer: function () {
+      const counterInterval = setInterval(() => {
+        if (this.duration <= 0) return clearInterval(counterInterval);
+        this.duration -= 1;
+        console.log(this.duration);
+      }, 1000);
+    },
+  },
   components: {
     recordcomp,
   },
   methods: {
     async record() {
       console.log("record starting");
-      let stream = await navigator.mediaDevices.getUserMedia({
+      const cam_stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
-      let recorder = new RecordRTCPromisesHandler(stream, {
-        type: "video",
+
+      const screen_stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
       });
+
+      const recorder = new RecordRTCPromisesHandler(
+        [cam_stream, screen_stream],
+        {
+          type: "video",
+        }
+      );
+
       console.log("hello");
       recorder.startRecording();
+      this.timer;
 
       const sleep = (m) => new Promise((r) => setTimeout(r, m));
       await sleep(this.duration * 1000);
 
       await recorder.stopRecording();
-      let blob = await recorder.getBlob();
+      const blob = await recorder.getBlob();
       console.log(blob);
       // invokeSaveAsDialog(blob, "screen_record.webm");
 
@@ -41,12 +61,12 @@ export default {
       // const file = new File([blob], "screen_record_local.webm");
       // filesaver.saveAs(file, "../records/screen_record_filesaver.webm");
 
-      const file = new File([blob], "screen_record_server.webm");
+      const file = new File([blob], "screen_and_cam_record_server.webm");
       const data = new FormData();
-      data.append("screen_record", file);
+      data.append("record", file);
 
       // ! for send to server
-      fetch("http://localhost:3000/exam/upload-screen-record", {
+      fetch("http://localhost:3001/exam/upload-screen-record", {
         method: "POST",
         body: data,
       }).then((response) => console.log(response));
@@ -58,28 +78,21 @@ export default {
 
 <template>
   <div>
-    <select v-model="duration">
-      <option value="3">Please select duration</option>
-      <option value="10">10sec</option>
-      <option value="30">30sec</option>
-      <option value="60">1min</option>
-      <option value="300">5min</option>
-    </select>
-    <recordcomp :startrecord="record" />
+    <div
+      style="display: flex; height: fit-content; justify-content: space-between"
+    >
+      <select v-model="duration" style="height: fit-content">
+        <option value="3">Please select duration</option>
+        <option value="10">10sec</option>
+        <option value="30">30sec</option>
+        <option value="60">1min</option>
+        <option value="300">5min</option>
+      </select>
+      <p>Time Left: {{ duration }} sec.</p>
+    </div>
+    <recordcomp :startrecord="record" :duration="duration" />
   </div>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
 </style>

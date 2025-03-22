@@ -5,9 +5,9 @@ class exam {
         return (req, res, next) => {
             console.log(req.files);
 
-            const folderPath = path.join(__dirname, "../", "uploads/exam", `${req.files.screen_record.name}`);
+            const folderPath = path.join(__dirname, "../", "uploads/exam", `${req.files.record.name}`);
 
-            req.files.screen_record.mv(folderPath, function (err) {
+            req.files.record.mv(folderPath, function (err) {
                 if (err) return next(new Error(err?.message));
             })
 

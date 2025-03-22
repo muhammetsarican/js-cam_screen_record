@@ -1,21 +1,23 @@
 <script lang="ts">
 export default {
-  props: ["startrecord"],
+  props: ["startrecord", "duration"],
 };
 </script>
 
 <template>
   <div>
-    <h1>cam recording during an exam</h1>
+    <h1>cam and screen recording during an exam</h1>
 
     <div class="card">
-      <button type="button" @click="startrecord">start the exam</button>
+      <button type="button" @click="startrecord" :disabled="this.duration <= 0">
+        start
+      </button>
       <p>we checking cam records after exam for prevent the theft of labor</p>
     </div>
 
     <p>
       if you have any objection for results, please send your application with
-      proofs
+      your proofs
     </p>
   </div>
 </template>
