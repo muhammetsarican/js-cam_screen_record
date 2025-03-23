@@ -25,6 +25,19 @@ export default {
     recordcomp,
   },
   methods: {
+    convertBlobToFile(blob) {
+      // ! convert blob to file
+      return new File(
+        [blob],
+        `screen_and_cam_record_server-${Date.now()}.webm`
+      );
+    },
+    createFormData(file) {
+      // ! create form data for send data to api
+      const data = new FormData();
+      data.append("record", file);
+      return data;
+    },
     async record() {
       // ! this is for cam recording
       const cam_stream = await navigator.mediaDevices.getUserMedia({
@@ -49,6 +62,14 @@ export default {
         [cam_stream, screen_stream],
         {
           type: "video",
+          // ? this var necessary for ondataavailable method
+          timeSlice: 1000,
+          // ? this method sends the data to server every 1 sec
+          ondataavailable: (blob) => {
+            const file = this.convertBlobToFile(blob);
+            const data = this.createFormData(file);
+            this.sendToServer(data);
+          },
         }
       );
 
