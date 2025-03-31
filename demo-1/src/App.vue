@@ -7,8 +7,6 @@ export default {
   data() {
     return {
       duration: 3,
-      videoSrc: null,
-      videoSrcObject: null,
       file: null,
     };
   },
@@ -42,19 +40,20 @@ export default {
       // ! this is for cam recording
       const cam_stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: true,
+        audio: false,
       });
 
       // ! this is for streaming cam record to user
-      this.videoSrcObject = cam_stream;
+      this.$refs.videoRef.srcObject = cam_stream;
+      this.$refs.videoRef.onloadedmetadata = () => {
+        this.$refs.videoRef.play();
+      };
 
       // ! this is for screen recording
       const screen_stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: true,
       });
-
-      // this.videoSrcObject = screen_stream;
 
       // ! this is recorder comes from the lib
       const recorder = new RecordRTCPromisesHandler(
@@ -87,7 +86,7 @@ export default {
       const blob = await recorder.getBlob();
 
       // ! this is sets video src for stream it
-      this.videoSrc = URL.createObjectURL(blob);
+      this.$refs.videoRef.src = URL.createObjectURL(blob);
 
       // ! convert blob to file
       this.file = new File([blob], "screen_and_cam_record_server.webm");
@@ -137,8 +136,7 @@ export default {
       :saveToLocal="saveToLocal"
     />
     <video
-      :src="videoSrc"
-      :srcObject="videoSrcObject"
+      ref="videoRef"
       style="
         border-radius: 25px;
         width: 350px;
