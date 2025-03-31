@@ -3,6 +3,8 @@ const path = require("path");
 const { examRouter } = require("./routes/exam");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
+const WebSocket = require("ws");
+const { writeFile } = require("fs");
 
 const app = express();
 // ? this is for prevent cors errors
@@ -29,4 +31,23 @@ app.listen(PORT, () => {
     app.use((req, res, next) => {
         return next(new Error("the page that you searched, not found"));
     })
+})
+
+const WS_PORT = 3002;
+
+const wss = new WebSocket.Server({ port: WS_PORT });
+
+wss.on("connection", function connection(ws) {
+    ws.on("message", function incoming(message) {
+        console.log(message);
+        const fileName = "video_records.webm";
+        const file = new File(message, fileName);
+        writeFile(`/home/muhammet/Documents/Projects/rubypome/demo-1/server/src/uploads/demo-2/${fileName}`, message, "binary", (err) => {
+            console.log(err);
+        })
+    });
+
+    ws.on("close", function () {
+        console.log("connection closed");
+    });
 })
